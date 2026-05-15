@@ -1,0 +1,100 @@
+{
+	"name": "df_orders_customers",
+	"properties": {
+		"type": "MappingDataFlow",
+		"typeProperties": {
+			"sources": [
+				{
+					"dataset": {
+						"referenceName": "Json1",
+						"type": "DatasetReference"
+					},
+					"name": "CustomerSource"
+				},
+				{
+					"dataset": {
+						"referenceName": "DelimitedText1",
+						"type": "DatasetReference"
+					},
+					"name": "Ordersource"
+				}
+			],
+			"sinks": [
+				{
+					"dataset": {
+						"referenceName": "DelimitedText4",
+						"type": "DatasetReference"
+					},
+					"name": "sink1"
+				}
+			],
+			"transformations": [
+				{
+					"name": "OrderClean"
+				},
+				{
+					"name": "CustomerClean"
+				},
+				{
+					"name": "join1"
+				},
+				{
+					"name": "aggregate1"
+				}
+			],
+			"scriptLines": [
+				"source(output(",
+				"          customer_id as integer,",
+				"          name as string,",
+				"          city as string,",
+				"          email as string,",
+				"          signup_date as string",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false,",
+				"     documentForm: 'documentPerLine') ~> CustomerSource",
+				"source(output(",
+				"          order_id as integer,",
+				"          customer_id as integer,",
+				"          product as string,",
+				"          amount as integer,",
+				"          date as date",
+				"     ),",
+				"     allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     ignoreNoFilesFound: false) ~> Ordersource",
+				"Ordersource select(skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> OrderClean",
+				"CustomerSource select(skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true) ~> CustomerClean",
+				"OrderClean, CustomerClean join(OrderClean@customer_id == CustomerClean@customer_id,",
+				"     joinType:'inner',",
+				"     matchType:'exact',",
+				"     ignoreSpaces: false,",
+				"     broadcast: 'auto')~> join1",
+				"join1 aggregate(groupBy(OrderClean@customer_id,",
+				"          name,",
+				"          city),",
+				"     order_id = count(order_id),",
+				"          amount = sum(toInteger(amount))) ~> aggregate1",
+				"aggregate1 sink(allowSchemaDrift: true,",
+				"     validateSchema: false,",
+				"     partitionFileNames:['customer_summary.csv'],",
+				"     umask: 0022,",
+				"     preCommands: [],",
+				"     postCommands: [],",
+				"     skipDuplicateMapInputs: true,",
+				"     skipDuplicateMapOutputs: true,",
+				"     mapColumn(",
+				"          customer_id,",
+				"          name,",
+				"          city,",
+				"          total_orders = order_id,",
+				"          total_spent = amount",
+				"     ),",
+				"     partitionBy('hash', 1)) ~> sink1"
+			]
+		}
+	}
+}

@@ -1,0 +1,15 @@
+{
+	"name": "e-commerceproject-321",
+	"properties": {
+		"trustModeClaimForMi": {
+			"value": "Disabled",
+			"editable": true
+		}
+	},
+	"location": "southindia",
+	"identity": {
+		"type": "SystemAssigned",
+		"principalId": "bf08499b-db5b-45e6-8f2d-b018736ea6d5",
+		"tenantId": "fbf15e6a-def0-4f00-b0fd-30db3553cd72"
+	}
+}
