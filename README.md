@@ -1,5 +1,4 @@
 # E-Commerce-ADF-Project
-# E-Commerce-ADF-Project
 
 ## 📌 Overview
 This project demonstrates an end-to-end Azure Data Factory (ADF) pipeline for processing E-Commerce sales and customer data using Bronze, Silver, and Gold architecture.
